@@ -1,12 +1,12 @@
-# Laser Job Logger
+# PICTORIAL
 
 Website operasional berbasis Python untuk pencatatan job produksi Laser dan UV.
 
 Stack aktif:
 
 - Django
-- PostgreSQL
-- Render
+- SQLite
+- PythonAnywhere
 
 Kode aplikasi utama ada di `backend_django/`.
 
@@ -35,6 +35,6 @@ cd backend_django
 
 ## Deploy
 
-Deploy production memakai `render.yaml` di root project.
+Deploy online gratis memakai PythonAnywhere free account dengan database SQLite.
 
-Panduan lengkap ada di `DEPLOY_RENDER_POSTGRES.md`.
+Panduan lengkap ada di `DEPLOY_PYTHONANYWHERE_SQLITE.md`.

@@ -17,19 +17,27 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-render_external_url = os.getenv("RENDER_EXTERNAL_URL", "").strip()
-if render_external_url:
-    parsed_render_url = urlparse(render_external_url)
-    if parsed_render_url.hostname and parsed_render_url.hostname not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(parsed_render_url.hostname)
+pythonanywhere_domain = os.getenv("PYTHONANYWHERE_DOMAIN", "").strip()
+if pythonanywhere_domain and pythonanywhere_domain not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(pythonanywhere_domain)
+
+app_base_url = os.getenv("APP_BASE_URL", "").strip()
+if app_base_url:
+    parsed_app_url = urlparse(app_base_url)
+    if parsed_app_url.hostname and parsed_app_url.hostname not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(parsed_app_url.hostname)
 
 csrf_trusted_origins = [
     origin.strip()
     for origin in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
-if render_external_url and render_external_url not in csrf_trusted_origins:
-    csrf_trusted_origins.append(render_external_url)
+if pythonanywhere_domain:
+    pythonanywhere_url = f"https://{pythonanywhere_domain}"
+    if pythonanywhere_url not in csrf_trusted_origins:
+        csrf_trusted_origins.append(pythonanywhere_url)
+if app_base_url and app_base_url not in csrf_trusted_origins:
+    csrf_trusted_origins.append(app_base_url)
 CSRF_TRUSTED_ORIGINS = csrf_trusted_origins
 
 INSTALLED_APPS = [
