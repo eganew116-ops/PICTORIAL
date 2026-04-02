@@ -31,3 +31,4 @@ media/
 # Local folders not part of Django app
 PICTORIAL/
 PICTORIAL26/
+PICTORIAL-LOGGER/
