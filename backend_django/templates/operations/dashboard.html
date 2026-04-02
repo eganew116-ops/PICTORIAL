@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+  <div class="hero">
+    <div class="hero-copy">
+      <div class="page-head">
+        <div class="stack">
+          <span class="muted">Ringkasan operasional</span>
+          <h2>Monitor job laser dan UV dari satu dashboard.</h2>
+        </div>
+      </div>
+      <p>Filter range akan mempengaruhi ringkasan produksi dan daftar job terakhir di bawah.</p>
+      <div class="filters">
+        <a class="chip {% if range_value == 'today' %}active{% endif %}" href="?range=today">Hari ini</a>
+        <a class="chip {% if range_value == 'month' %}active{% endif %}" href="?range=month">Bulan ini</a>
+        <a class="chip {% if range_value == 'all' %}active{% endif %}" href="?range=all">Semua</a>
+      </div>
+    </div>
+
+    <div class="hero-panel">
+      <h3>Aksi Cepat</h3>
+      <div class="actions">
+        <a class="button primary" href="{% url 'job_create' 'laser' %}">Input Job Laser</a>
+        <a class="button primary" href="{% url 'job_create' 'uv' %}">Input Job UV</a>
+        <a class="button ghost" href="{% url 'pricing_list' %}">Kelola Pricing</a>
+      </div>
+      <div class="helper-list">
+        <div class="helper-item">
+          <span>Pricing aktif</span>
+          <strong>{{ active_pricing_count }}</strong>
+        </div>
+        <div class="helper-item">
+          <span>Periode aktif</span>
+          <strong>
+            {% if range_value == 'today' %}Hari ini{% elif range_value == 'month' %}Bulan ini{% else %}Semua data{% endif %}
+          </strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <span class="machine-pill laser">Laser</span>
+      <div class="stats">
+        <div class="stat"><label>Jobs</label><strong>{{ laser_summary.jobs }}</strong></div>
+        <div class="stat"><label>Good</label><strong>{{ laser_summary.good }}</strong></div>
+        <div class="stat"><label>Reject</label><strong>{{ laser_summary.reject }}</strong></div>
+        <div class="stat">
+          <label>Down (s)</label>
+          <strong>{{ laser_summary.downtime }}</strong>
+          <small>Akumulasi downtime</small>
+        </div>
+        <div class="stat">
+          <label>Revenue</label>
+          <strong>Rp {{ laser_summary.revenue|floatformat:0 }}</strong>
+          <small>Estimasi pendapatan</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="machine-pill uv">UV</span>
+      <div class="stats">
+        <div class="stat"><label>Jobs</label><strong>{{ uv_summary.jobs }}</strong></div>
+        <div class="stat"><label>Good</label><strong>{{ uv_summary.good }}</strong></div>
+        <div class="stat"><label>Reject</label><strong>{{ uv_summary.reject }}</strong></div>
+        <div class="stat">
+          <label>Down (s)</label>
+          <strong>{{ uv_summary.downtime }}</strong>
+          <small>Akumulasi downtime</small>
+        </div>
+        <div class="stat">
+          <label>Revenue</label>
+          <strong>Rp {{ uv_summary.revenue|floatformat:0 }}</strong>
+          <small>Estimasi pendapatan</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <div class="page-head">
+      <div class="stack">
+        <span class="muted">Aktivitas terbaru</span>
+        <h2>Job terakhir</h2>
+      </div>
+      <div class="actions">
+        <a class="button" href="{% url 'job_list' 'laser' %}?range={{ range_value }}">Buka Laser</a>
+        <a class="button" href="{% url 'job_list' 'uv' %}?range={{ range_value }}">Buka UV</a>
+      </div>
+    </div>
+
+    {% if recent_jobs %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Job</th>
+              <th>Mesin</th>
+              <th>Tanggal</th>
+              <th>Operator</th>
+              <th>QC</th>
+              <th>Total</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in recent_jobs %}
+              <tr>
+                <td>
+                  <div class="meta">
+                    <strong>{{ job.job_code }}</strong>
+                    <small>{{ job.material }} · {{ job.job_type }}</small>
+                  </div>
+                </td>
+                <td>
+                  <span class="machine-pill {% if job.machine_type == 'LASER' %}laser{% else %}uv{% endif %}">
+                    {{ job.machine_type }}
+                  </span>
+                </td>
+                <td>{{ job.job_date|date:"d/m/Y" }}</td>
+                <td>{{ job.operator_name }}</td>
+                <td>
+                  <span class="status-pill {% if job.qc_status == 'OK' %}ok{% elif job.qc_status == 'REWORK' %}rework{% else %}hold{% endif %}">
+                    {{ job.qc_status }}
+                  </span>
+                </td>
+                <td>{% if job.total_price %}Rp {{ job.total_price|floatformat:0 }}{% else %}-{% endif %}</td>
+                <td><a class="button" href="{% url 'job_edit' job.pk %}">Edit</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <strong>Belum ada job pada periode ini.</strong>
+        <span class="muted">Mulai dari input job laser atau UV agar dashboard langsung terisi.</span>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

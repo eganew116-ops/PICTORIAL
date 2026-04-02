@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+
+# Django
+backend_django/.env
+backend_django/db.sqlite3
+backend_django/staticfiles/
+media/
+
+# Test and tooling
+.coverage
+.pytest_cache/
+.mypy_cache/
+
+# IDE
+.idea/
+*.iml
+
+# OS / misc
+.DS_Store
+*.log
+*.sqlite3
+
+# Local folders not part of Django app
+PICTORIAL/
+PICTORIAL26/

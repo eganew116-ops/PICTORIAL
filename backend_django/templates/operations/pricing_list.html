@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing Rules{% endblock %}
+
+{% block content %}
+  <div class="hero">
+    <div class="hero-copy">
+      <div class="stack">
+        <span class="muted">Aturan harga</span>
+        <h2>Kelola tarif laser dan UV dari satu tempat.</h2>
+        <p>Laser akan selalu diperlakukan sebagai tarif per menit. UV bisa per menit, per pcs, atau per job.</p>
+      </div>
+      <div class="actions">
+        <a class="button primary" href="{% url 'pricing_create' %}">Tambah Pricing Rule</a>
+      </div>
+    </div>
+    <div class="hero-panel">
+      <h3>Catatan</h3>
+      <div class="helper-list">
+        <div class="helper-item"><span>Total pricing rule</span><strong>{{ rules|length }}</strong></div>
+        <div class="helper-item"><span>Yang aktif</span><strong>{{ active_rules_count }}</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Pricing Rules</h2>
+    {% if rules %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Machine</th>
+              <th>Job Type</th>
+              <th>Mode</th>
+              <th>Harga</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rule in rules %}
+              <tr>
+                <td>
+                  <span class="machine-pill {% if rule.machine_type == 'LASER' %}laser{% else %}uv{% endif %}">
+                    {{ rule.machine_type }}
+                  </span>
+                </td>
+                <td>{{ rule.job_type }}</td>
+                <td>{{ rule.price_mode|default:"-" }}</td>
+                <td>Rp {{ rule.price_value|floatformat:0 }}</td>
+                <td>
+                  <span class="status-pill {% if rule.is_active %}ok{% else %}hold{% endif %}">
+                    {% if rule.is_active %}Aktif{% else %}Nonaktif{% endif %}
+                  </span>
+                </td>
+                <td><a class="button" href="{% url 'pricing_edit' rule.pk %}">Edit</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <strong>Belum ada pricing rule.</strong>
+        <span class="muted">Tambahkan tarif dulu supaya perhitungan job tidak kosong.</span>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

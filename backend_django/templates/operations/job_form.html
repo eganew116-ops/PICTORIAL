@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="page-head">
+      <div class="stack">
+        <span class="machine-pill {% if machine_type == 'LASER' %}laser{% else %}uv{% endif %}">{{ machine_type }}</span>
+        <h2>{{ page_title }}</h2>
+      </div>
+    </div>
+    {% if machine_type == 'UV' %}
+      <div class="hint">Untuk UV, job type akan otomatis disimpan sebagai <strong>PRINT</strong>.</div>
+    {% else %}
+      <div class="hint">Untuk Laser, biaya dihitung per menit dan area hanya dipakai jika sumber bahan dari Pictorial.</div>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      {{ form.machine_type }}
+      <div class="form-grid" style="margin-top: 16px;">
+        {% for field in form %}
+          {% if field.name != 'machine_type' %}
+            <div class="field" style="{% if field.name == 'notes' or field.name == 'reject_reasons' %}grid-column: 1 / -1;{% endif %}">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {{ field.errors }}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="actions" style="margin-top: 18px;">
+        <button type="submit" class="primary">Simpan</button>
+        <a class="button" href="{% url 'job_list' machine_type|lower %}">Kembali</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

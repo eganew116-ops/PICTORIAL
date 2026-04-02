@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Job {{ machine_type }}{% endblock %}
+
+{% block content %}
+  <div class="hero">
+    <div class="hero-copy">
+      <div class="stack">
+        <span class="machine-pill {% if machine_type == 'LASER' %}laser{% else %}uv{% endif %}">{{ machine_type }}</span>
+        <h2>Daftar job {{ machine_type|lower }} untuk kebutuhan operasional harian.</h2>
+        <p>Pakai filter periode, cari berdasarkan job ID atau material, lalu export CSV jika perlu rekap.</p>
+      </div>
+      <div class="filters">
+        <a class="chip {% if range_value == 'today' %}active{% endif %}" href="?range=today{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">Hari ini</a>
+        <a class="chip {% if range_value == 'month' %}active{% endif %}" href="?range=month{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">Bulan ini</a>
+        <a class="chip {% if range_value == 'all' %}active{% endif %}" href="?range=all{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">Semua</a>
+      </div>
+    </div>
+
+    <div class="hero-panel">
+      <h3>Aksi</h3>
+      <div class="actions">
+        <a class="button primary" href="{% url 'job_create' machine_type|lower %}">Input Job {{ machine_type }}</a>
+        <a class="button" href="{% url 'job_export_csv' machine_type|lower %}?range={{ range_value }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">Export CSV</a>
+      </div>
+      <div class="helper-list">
+        <div class="helper-item"><span>Total job</span><strong>{{ summary.jobs }}</strong></div>
+        <div class="helper-item"><span>Revenue</span><strong>Rp {{ summary.revenue|floatformat:0 }}</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 16px;">
+    <h2>Ringkasan {{ machine_type }}</h2>
+    <div class="stats">
+      <div class="stat"><label>Jobs</label><strong>{{ summary.jobs }}</strong></div>
+      <div class="stat"><label>Good</label><strong>{{ summary.good }}</strong></div>
+      <div class="stat"><label>Reject</label><strong>{{ summary.reject }}</strong></div>
+      <div class="stat"><label>Down (s)</label><strong>{{ summary.downtime }}</strong><small>Akumulasi downtime</small></div>
+      <div class="stat"><label>Revenue</label><strong>Rp {{ summary.revenue|floatformat:0 }}</strong><small>Estimasi pendapatan</small></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <div class="stack">
+        <h2>Daftar Job {{ machine_type }}</h2>
+        <span class="muted">Cari berdasarkan job ID, material, operator, atau catatan.</span>
+      </div>
+      <form method="get" class="search-form">
+        <input type="hidden" name="range" value="{{ range_value }}">
+        <input
+          type="search"
+          name="q"
+          value="{{ search_query }}"
+          placeholder="Cari job ID, material, operator, catatan"
+        >
+        <button type="submit" class="primary">Cari</button>
+        {% if search_query %}
+          <a class="button ghost" href="{% url 'job_list' machine_type|lower %}?range={{ range_value }}">Reset</a>
+        {% endif %}
+      </form>
+    </div>
+
+    {% if jobs %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Job</th>
+              <th>Operator</th>
+              <th>Durasi</th>
+              <th>Output</th>
+              <th>QC</th>
+              <th>Total</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in jobs %}
+              <tr>
+                <td>{{ job.job_date|date:"d/m/Y" }}</td>
+                <td>
+                  <div class="meta">
+                    <strong>{{ job.job_code }}</strong>
+                    <small>{{ job.job_type }} · {{ job.material }}</small>
+                  </div>
+                </td>
+                <td>{{ job.operator_name }}</td>
+                <td>
+                  <div class="meta">
+                    <strong>{{ job.actual_seconds }} s</strong>
+                    <small>Downtime {{ job.downtime_seconds }} s</small>
+                  </div>
+                </td>
+                <td>
+                  <div class="meta">
+                    <strong>Good {{ job.good_qty }}</strong>
+                    <small>Reject {{ job.reject_qty }}</small>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-pill {% if job.qc_status == 'OK' %}ok{% elif job.qc_status == 'REWORK' %}rework{% else %}hold{% endif %}">
+                    {{ job.qc_status }}
+                  </span>
+                </td>
+                <td>{% if job.total_price %}Rp {{ job.total_price|floatformat:0 }}{% else %}-{% endif %}</td>
+                <td>
+                  <div class="inline-row">
+                    <a class="button" href="{% url 'job_edit' job.pk %}">Edit</a>
+                    <form method="post" action="{% url 'job_delete' job.pk %}" class="inline" onsubmit="return confirm('Hapus job ini?');">
+                      {% csrf_token %}
+                      <button type="submit" class="warn">Hapus</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <strong>Belum ada data yang cocok.</strong>
+        <span class="muted">
+          {% if search_query %}
+            Pencarian "{{ search_query }}" tidak menemukan job pada periode ini.
+          {% else %}
+            Belum ada job {{ machine_type|lower }} pada periode yang dipilih.
+          {% endif %}
+        </span>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
